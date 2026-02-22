@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artisan TTS Studio Pro</title>
+    <!-- React & Babel for Browser Rendering -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        audio::-webkit-media-controls-panel { background-color: #1e293b; }
+    </style>
+</head>
+<body class="bg-[#0f172a]">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- Custom Inline SVG Icons for maximum stability ---
+        const IconPlay = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>;
+        const IconDownload = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>;
+        const IconVolume2 = ({ className, style }) => <svg className={className} style={style} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>;
+        const IconRefreshCw = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>;
+        const IconUserPlus = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>;
+        const IconUsers = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>;
+        const IconTrash2 = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>;
+        const IconMic2 = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>;
+        const IconMusic = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>;
+        const IconSparkles = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1-8.313-12.454z"></path><path d="m19 4-4 4"></path><path d="m15 4 4 4"></path></svg>;
+
+        const App = () => {
+            const [script, setScript] = useState("Narrator: Welcome to the future of sound.\nCharacter: Is this truly the Absolute Freedom?");
+            const [isGenerating, setIsGenerating] = useState(false);
+            const [history, setHistory] = useState([]);
+            const [status, setStatus] = useState("");
+            const [mode, setMode] = useState("multi");
+            const [speakers, setSpeakers] = useState({
+                "Narrator": "Zephyr",
+                "Character": "Kore",
+                "Speaker1": "Puck"
+            });
+
+            const apiKey = ""; // Runtime provided
+
+            const voiceLibrary = {
+                "Masculine": ["Zephyr", "Puck", "Charon", "Fenrir", "Orus", "Enceladus", "Iapetus", "Algieba"],
+                "Feminine": ["Kore", "Leda", "Aoede", "Callirrhoe", "Autonoe", "Umbriel", "Despina", "Erinome"],
+                "Clear/Neutral": ["Algenib", "Rasalgethi", "Laomedeia", "Achernar", "Alnilam", "Schedar", "Gacrux"]
+            };
+
+            const pcmToWav = (pcmData, sampleRate) => {
+                const buffer = new ArrayBuffer(44 + pcmData.length);
+                const view = new DataView(buffer);
+                view.setUint32(0, 0x52494646, false); 
+                view.setUint32(4, 36 + pcmData.length, true);
+                view.setUint32(8, 0x57415645, false); 
+                view.setUint32(12, 0x666d7420, false); 
+                view.setUint32(16, 16, true);
+                view.setUint16(20, 1, true); 
+                view.setUint16(22, 1, true); 
+                view.setUint32(24, sampleRate, true);
+                view.setUint32(28, sampleRate * 2, true);
+                view.setUint16(32, 2, true);
+                view.setUint16(34, 16, true);
+                view.setUint32(36, 0x64617461, false); 
+                view.setUint32(40, pcmData.length, true);
+                new Uint8Array(buffer, 44).set(new Uint8Array(pcmData));
+                return new Blob([buffer], { type: 'audio/wav' });
+            };
+
+            const generateTTS = async () => {
+                if (!script.trim()) {
+                    setStatus("Error: สคริปต์ว่างเปล่า");
+                    return;
+                }
+                setIsGenerating(true);
+                setStatus("กำลังสังเคราะห์เสียง...");
+
+                const payload = {
+                    model: "gemini-2.5-flash-preview-tts",
+                    contents: [{ parts: [{ text: script }] }],
+                    generationConfig: { responseModalities: ["AUDIO"] }
+                };
+
+                if (mode === "multi") {
+                    payload.generationConfig.speechConfig = {
+                        multiSpeakerVoiceConfig: {
+                            speakerVoiceConfigs: Object.entries(speakers).map(([name, voiceName]) => ({
+                                speaker: name,
+                                voiceConfig: { prebuiltVoiceConfig: { voiceName } }
+                            }))
+                        }
+                    };
+                } else {
+                    payload.generationConfig.speechConfig = {
+                        voiceConfig: { prebuiltVoiceConfig: { voiceName: Object.values(speakers)[0] || "Kore" } }
+                    };
+                }
+
+                const maxRetries = 5;
+                const callApi = async (retryCount = 0) => {
+                    try {
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (!response.ok) throw new Error('API Error');
+
+                        const result = await response.json();
+                        const audioPart = result.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+
+                        if (audioPart) {
+                            const base64Audio = audioPart.inlineData.data;
+                            const sampleRate = 24000;
+                            const binaryString = atob(base64Audio);
+                            const pcmData = new Uint8Array(binaryString.length);
+                            for (let i = 0; i < binaryString.length; i++) pcmData[i] = binaryString.charCodeAt(i);
+
+                            const wavBlob = pcmToWav(pcmData, sampleRate);
+                            const url = URL.createObjectURL(wavBlob);
+                            
+                            setHistory(prev => [{
+                                id: Date.now(),
+                                url,
+                                text: script.substring(0, 40) + "...",
+                                timestamp: new Date().toLocaleTimeString()
+                            }, ...prev]);
+                            setStatus("Success: สร้างไฟล์เสียงสำเร็จ!");
+                            setIsGenerating(false);
+                        }
+                    } catch (error) {
+                        if (retryCount < maxRetries) {
+                            setTimeout(() => callApi(retryCount + 1), Math.pow(2, retryCount) * 1000);
+                        } else {
+                            setStatus("Error: การเชื่อมต่อล้มเหลว กรุณาลองใหม่");
+                            setIsGenerating(false);
+                        }
+                    }
+                };
+
+                callApi();
+            };
+
+            return (
+                <div className="min-h-screen text-slate-200 p-4 md:p-8 selection:bg-blue-500/30">
+                    <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <div className="lg:col-span-8 space-y-6">
+                            <header className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-blue-600 p-2 rounded-xl shadow-lg">
+                                        <IconMic2 className="text-white" />
+                                    </div>
+                                    <div>
+                                        <h1 className="text-xl font-bold text-white leading-none">Artisan Studio <span className="text-blue-500">PRO</span></h1>
+                                        <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Gen-AI Voice Synthesizer</p>
+                                    </div>
+                                </div>
+                                <div className="flex bg-slate-800/50 p-1 rounded-xl border border-slate-700">
+                                    <button onClick={() => setMode('multi')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${mode === 'multi' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400'}`}>DIALOGUE</button>
+                                    <button onClick={() => setMode('single')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${mode === 'single' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400'}`}>SINGLE</button>
+                                </div>
+                            </header>
+
+                            <div className="bg-slate-800/40 border border-slate-700/50 rounded-3xl p-6 backdrop-blur-sm shadow-2xl">
+                                <textarea
+                                    className="w-full h-80 bg-slate-900/50 border border-slate-700 rounded-2xl p-5 text-slate-100 placeholder:text-slate-700 focus:ring-2 focus:ring-blue-500/50 outline-none transition-all resize-none font-mono text-sm leading-relaxed"
+                                    value={script}
+                                    onChange={(e) => setScript(e.target.value)}
+                                    placeholder="Enter your script here..."
+                                />
+                                <div className="mt-6 flex flex-col md:flex-row gap-4 items-center">
+                                    <div className={`flex-grow p-4 rounded-2xl border flex items-center gap-3 ${status.includes('Error') ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-blue-500/5 border-blue-500/10 text-blue-300'}`}>
+                                        {isGenerating ? <IconRefreshCw className="animate-spin" /> : <IconSparkles />}
+                                        <span className="text-xs font-medium">{status || "Ready to synthesize"}</span>
+                                    </div>
+                                    <button onClick={generateTTS} disabled={isGenerating} className="w-full md:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 text-white rounded-2xl font-bold transition-all">
+                                        {isGenerating ? 'PROCESSING...' : 'GENERATE AUDIO'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="lg:col-span-4 space-y-6">
+                            <section className="bg-slate-800/40 border border-slate-700/50 rounded-3xl p-6 shadow-xl">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-300"><IconUsers className="text-purple-400" /> Cast & Voices</div>
+                                    {mode === 'multi' && <button onClick={() => setSpeakers(p => ({...p, [`Speaker${Object.keys(p).length+1}`]: "Kore"}))} className="p-1 text-slate-400"><IconUserPlus /></button>}
+                                </div>
+                                <div className="space-y-4 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                                    {Object.entries(speakers).map(([name, currentVoice]) => (
+                                        <div key={name} className="bg-slate-900/40 border border-slate-700/50 rounded-xl p-3 space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-bold text-white">{name}</span>
+                                                {mode === 'multi' && Object.keys(speakers).length > 1 && <button onClick={() => {const n={...speakers}; delete n[name]; setSpeakers(n);}} className="text-slate-600"><IconTrash2 /></button>}
+                                            </div>
+                                            <select className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-[10px] text-slate-300 outline-none" value={currentVoice} onChange={(e) => setSpeakers(p => ({...p, [name]: e.target.value}))}>
+                                                {Object.entries(voiceLibrary).map(([group, list]) => (
+                                                    <optgroup label={group} key={group}>{list.map(v => <option key={v} value={v}>{v}</option>)}</optgroup>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+
+                            <section className="bg-slate-800/40 border border-slate-700/50 rounded-3xl p-6 shadow-xl flex-grow flex flex-col min-h-[300px]">
+                                <div className="flex items-center gap-2 text-sm font-semibold text-slate-300 mb-6"><IconMusic className="text-green-400" /> Recording History</div>
+                                <div className="space-y-4 overflow-y-auto flex-grow pr-2 custom-scrollbar">
+                                    {history.length === 0 ? <div className="flex flex-col items-center justify-center h-full text-slate-600 space-y-2 py-10">
+                                        <IconVolume2 style={{ opacity: 0.2 }} />
+                                        <p className="text-xs">No recordings yet</p>
+                                    </div> : history.map((entry) => (
+                                        <div key={entry.id} className="bg-slate-900/60 border border-slate-700/50 rounded-2xl p-4 space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-[10px] text-slate-500 font-mono">{entry.timestamp}</span>
+                                                <a href={entry.url} download={`take-${entry.id}.wav`} className="p-1 bg-slate-800 rounded-lg text-slate-400"><IconDownload /></a>
+                                            </div>
+                                            <audio src={entry.url} controls className="w-full h-8" />
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
